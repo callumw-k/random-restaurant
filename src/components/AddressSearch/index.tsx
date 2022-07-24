@@ -1,10 +1,4 @@
-import React, {
-  Dispatch,
-  SetStateAction,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import {
   Box,
   Button,
@@ -15,77 +9,45 @@ import {
   Input,
   VStack,
 } from "@chakra-ui/react";
-import { PlaceTypes } from "../../../types/placeTypes";
-import { FormState } from "../../../types/form-types";
+import { FormState, PlaceArray } from "../../../types/form-types";
+import { googleAutocomplete } from "../hooks/placesHook";
+import { AsyncSelect, SingleValue } from "chakra-react-select";
 
-interface CustomAutoCompleteProps extends google.maps.places.Autocomplete {}
+const handleChange = async (string: string) => {
+  if (string) {
+    const results = (await googleAutocomplete(string)) as PlaceArray;
+    const parsedResults = results?.map((result) => {
+      return {
+        label: `${result.structured_formatting.main_text}, ${result.structured_formatting.secondary_text}`,
+        value: result.place_id,
+      };
+    });
+    return parsedResults;
+  } else {
+    return [{ label: "", value: "" }];
+  }
+};
 
 export const AddressSearch = ({
-  setPlaceObject,
   formState,
   setFormState,
 }: {
-  setPlaceObject: Dispatch<SetStateAction<PlaceTypes>>;
   formState: FormState;
   setFormState: Dispatch<SetStateAction<FormState>>;
 }) => {
-  const [autoCompleteService, setAutoCompleteService] = useState<
-    CustomAutoCompleteProps | undefined
-  >(undefined);
-  const searchInput = useRef(null);
-  const { address, radius, keywords } = formState;
-
-  const init = () => {
-    if (typeof window?.google !== "undefined") {
-      setAutoCompleteService(
-        new window.google.maps.places.Autocomplete(
-          searchInput.current as unknown as HTMLInputElement
-        )
-      );
-    }
-  };
-
-  const createAutocomplete = () => {
-    autoCompleteService?.setFields([
-      "place_id",
-      "geometry",
-      "formatted_address",
-    ]);
-    autoCompleteService?.addListener("place_changed", () => getPlaceId());
-    console.debug(autoCompleteService);
-  };
-
-  const getPlaceId = () => {
-    const addressObject = autoCompleteService?.getPlace();
-    if (addressObject) {
-      if (addressObject.formatted_address) {
-        setFormState({
-          ...formState,
-          address: addressObject.formatted_address,
-        });
-      }
-      setPlaceObject({
-        ...addressObject,
-        latitude: addressObject?.geometry?.location?.lat(),
-        longitude: addressObject?.geometry?.location?.lng(),
-      } as PlaceTypes);
-    }
-  };
-
-  const HandleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormState({ ...formState, [e.target.name]: e.target.value });
   };
 
-  useEffect(() => {
-    if (!autoCompleteService) {
-      init();
-    }
-    if (!autoCompleteService?.fields) {
-      createAutocomplete();
-    }
-  }, [autoCompleteService, formState]);
-
-  console.debug(autoCompleteService);
+  const handleReactSelect = (
+    newValue: SingleValue<{ label: string; value: string }>
+  ) => {
+    setFormState({
+      ...formState,
+      address: newValue?.label || "",
+      id: newValue?.value || "",
+    });
+  };
 
   return (
     <Box maxW="xl" margin="0 auto">
@@ -93,24 +55,29 @@ export const AddressSearch = ({
         <VStack alignItems="flex-start" spacing={4}>
           <FormControl>
             <FormLabel htmlFor="address">Address</FormLabel>
-            <Input
-              ref={searchInput}
-              id="autocomplete"
-              type="address"
+            <AsyncSelect
               className="Autocomplete"
+              useBasicStyles
               name="address"
-              value={address}
-              onChange={(e) => HandleFormChange(e)}
+              onChange={(
+                newValue: SingleValue<{ label: string; value: string }>
+              ) => {
+                handleReactSelect(newValue);
+              }}
+              loadOptions={async (inputValue) => {
+                return await handleChange(inputValue);
+              }}
             />
-            <FormHelperText>Input your address.</FormHelperText>
+            <FormHelperText pos="relative">Input your address.</FormHelperText>
           </FormControl>
           <HStack alignItems="flex-start">
             <FormControl>
               <FormLabel htmlFor="radius">Radius</FormLabel>
               <Input
-                onChange={(e) => HandleFormChange(e)}
+                onChange={(e) => handleInputChange(e)}
                 type="number"
                 name="radius"
+                value={formState.radius}
               />
               <FormHelperText>Radius (in metres).</FormHelperText>
             </FormControl>
@@ -118,7 +85,8 @@ export const AddressSearch = ({
               <FormLabel htmlFor="keywords">Keywords</FormLabel>
               <Input
                 type="string"
-                onChange={(e) => HandleFormChange(e)}
+                value={formState.keywords}
+                onChange={(e) => handleInputChange(e)}
                 name="keywords"
               />
               <FormHelperText>
