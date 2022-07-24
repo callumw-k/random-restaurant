@@ -31,9 +31,11 @@ const handleChange = async (string: string) => {
 export const AddressSearch = ({
   formState,
   setFormState,
+  onSubmit,
 }: {
   formState: FormState;
   setFormState: Dispatch<SetStateAction<FormState>>;
+  onSubmit: () => void;
 }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormState({ ...formState, [e.target.name]: e.target.value });
@@ -51,7 +53,12 @@ export const AddressSearch = ({
 
   return (
     <Box maxW="xl" margin="0 auto">
-      <form>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSubmit();
+        }}
+      >
         <VStack alignItems="flex-start" spacing={4}>
           <FormControl>
             <FormLabel htmlFor="address">Address</FormLabel>
@@ -94,7 +101,7 @@ export const AddressSearch = ({
               </FormHelperText>
             </FormControl>
           </HStack>
-          <Button>Submit</Button>
+          <Button type="submit">Submit</Button>
         </VStack>
       </form>
     </Box>
