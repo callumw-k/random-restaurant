@@ -7,6 +7,7 @@ const Home: NextPage = () => {
   const [placeObject, setPlaceObject] = useState<string>("");
 
   const [formState, setFormState] = useState<FormState>({
+    id: "",
     address: "",
     radius: "",
     keywords: "",
@@ -15,10 +16,7 @@ const Home: NextPage = () => {
   console.debug(placeObject, formState);
   return (
     <>
-      <AddressSearch
-        formState={formState}
-        setFormState={setFormState}
-      />
+      <AddressSearch formState={formState} setFormState={setFormState} />
       {/* <DisplayRestaurant placeObject={placeObject} /> */}
     </>
   );
