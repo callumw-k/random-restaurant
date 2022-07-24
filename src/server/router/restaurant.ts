@@ -1,16 +1,7 @@
 import { z } from "zod";
 import { createRouter } from "./context";
 import { GetPlaceDetailsResponse } from "../../../types/api-response-types";
-
-const createUrl = (type: "PlaceDetails" | "Test"): string => {
-  const baseUrl = "https://maps.googleapis.com/maps/api/place";
-  switch (type) {
-    case "PlaceDetails":
-      return `${baseUrl}/details/json`;
-    default:
-      return "";
-  }
-};
+import { createUrl } from "../../components/hooks/placesHook";
 
 export const restaurantRouter = createRouter()
   .query("get", {
@@ -39,9 +30,7 @@ export const restaurantRouter = createRouter()
       if (input) {
         console.debug("I've actually been called");
         const data = await fetch(
-          `${createUrl("PlaceDetails")}?key=${
-            process.env.GOOGLE_MAPS_API_KEY
-          }&place_id=${input}`
+          `${createUrl("PlaceDetails")}&place_id=${input}`
         );
         return (await data.json()) as GetPlaceDetailsResponse;
       }
