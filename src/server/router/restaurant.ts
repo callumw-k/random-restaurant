@@ -1,18 +1,49 @@
+import { z } from "zod";
 import { createRouter } from "./context";
-import { PlaceObject } from "../../../types/placeTypes";
+import { GetPlaceDetailsResponse } from "../../../types/api-response-types";
 
-export const exampleRouter = createRouter().query("get", {
-  input: PlaceObject,
-  async resolve({ input }) {
-    const location = encodeURIComponent(input.latitude + "," + input.longitude);
-    const getTest = async () => {
-      const data = await fetch(
-        `https://maps.googleapis.com/maps/api/place/nearbysearch/json?radius=1000&keyword=indian&&type=restaurant&key=AIzaSyBYRCIjM6_t12uEOftrGtyN9FBJbpT8hEo&location=${location}`
+const createUrl = (type: "PlaceDetails" | "Test"): string => {
+  const baseUrl = "https://maps.googleapis.com/maps/api/place";
+  switch (type) {
+    case "PlaceDetails":
+      return `${baseUrl}/details/json`;
+    default:
+      return "";
+  }
+};
+
+export const restaurantRouter = createRouter()
+  .query("get", {
+    input: z.object({
+      latitude: z.string(),
+      longitude: z.string(),
+    }),
+    async resolve({ input }) {
+      const location = encodeURIComponent(
+        input.latitude + "," + input.longitude
       );
-      return await data.json();
-    };
+      const getTest = async () => {
+        const data = await fetch(
+          `https://maps.googleapis.com/maps/api/place/nearbysearch/json?radius=1000&keyword=indian&&type=restaurant&key=${process.env.GOOGLE_MAPS_API_KEY}&location=${location}`
+        );
+        return await data.json();
+      };
 
-    const data = await getTest();
-    return { ...data };
-  },
-});
+      const data = await getTest();
+      return { ...data };
+    },
+  })
+  .query("getPlaceDetails", {
+    input: z.string(),
+    async resolve({ input }) {
+      if (input) {
+        console.debug("I've actually been called");
+        const data = await fetch(
+          `${createUrl("PlaceDetails")}?key=${
+            process.env.GOOGLE_MAPS_API_KEY
+          }&place_id=${input}`
+        );
+        return (await data.json()) as GetPlaceDetailsResponse;
+      }
+    },
+  });
