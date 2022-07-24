@@ -2,11 +2,11 @@
 import { createRouter } from "./context";
 import superjson from "superjson";
 
-import { exampleRouter } from "./restaurant";
+import { restaurantRouter } from "./restaurant";
 
 export const appRouter = createRouter()
   .transformer(superjson)
-  .merge("restaurants.", exampleRouter);
+  .merge("restaurants.", restaurantRouter);
 
 // export type definition of API
 export type AppRouter = typeof appRouter;
