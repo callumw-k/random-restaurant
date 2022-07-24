@@ -33,8 +33,8 @@ export interface Geometry {
   viewport: Viewport;
 }
 export interface NortheastOrSouthwestOrLocation {
-  lat: number;
-  lng: number;
+  lat: () => number;
+  lng: () => number;
 }
 export interface Viewport {
   northeast: NortheastOrSouthwestOrLocation;
