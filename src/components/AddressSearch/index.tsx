@@ -52,7 +52,7 @@ export const AddressSearch = ({
   };
 
   return (
-    <Box maxW="xl" margin="0 auto">
+    <Box >
       <form
         onSubmit={(event) => {
           event.preventDefault();
