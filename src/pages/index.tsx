@@ -2,18 +2,23 @@ import type { NextPage } from "next";
 import React, { useState } from "react";
 import { AddressSearch } from "../components/AddressSearch";
 import { FormState } from "../../types/form-types";
-import { Heading } from "@chakra-ui/react";
+import { Container, Spinner } from "@chakra-ui/react";
 import {
-  NearbySearchObject,
   NearbySearchResponse,
+  PlaceDetailsObject,
 } from "../../types/placeTypes";
-import { getNearbyPlaces } from "../components/hooks/placesHook";
+import {
+  getNearbyPlaces,
+  getPlaceDetails,
+} from "../components/hooks/placesHook";
 import { getLatLng, randomInt } from "../components/utils";
+import PlaceCard from "../components/PlaceCard";
 
 const Home: NextPage = () => {
   const [chosenPlace, setChosenPlace] = useState<
-    NearbySearchObject | undefined
+    PlaceDetailsObject | undefined
   >(undefined);
+  const [loadingCard, setLoadingCard] = useState(true);
 
   const [formState, setFormState] = useState<FormState>({
     id: "",
@@ -30,19 +35,31 @@ const Home: NextPage = () => {
       formState.radius,
       formState.keywords
     )) as NearbySearchResponse;
-    console.debug(nearbyData);
-    setChosenPlace(nearbyData[randomInt(0, nearbyData.length)]);
+    const chosen = nearbyData[randomInt(0, nearbyData.length - 1)];
+    const placeDetails = (await getPlaceDetails(
+      chosen?.place_id
+    )) as PlaceDetailsObject;
+    setChosenPlace(placeDetails);
+    setLoadingCard(false)
   };
 
   return (
-    <>
+    <Container maxW="xl">
       <AddressSearch
         onSubmit={getRandomRestaurants}
         formState={formState}
         setFormState={setFormState}
       />
-      <Heading>{chosenPlace?.name || ""}</Heading>
-    </>
+      {loadingCard ? (
+        <Spinner />
+      ) : (
+        <PlaceCard
+          name={chosenPlace?.name || ""}
+          image={chosenPlace?.photos?.[0]?.getUrl()}
+          mapLink={chosenPlace?.url || ""}
+        />
+      )}
+    </Container>
   );
 };
 

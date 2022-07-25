@@ -14,5 +14,6 @@ export const getLatLng = async (mapsId: string) => {
 };
 
 export const randomInt = (min: number, max: number) => {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  const rand = Math.floor(Math.random() * (max - min + 1)) + min;
+  return rand;
 };
