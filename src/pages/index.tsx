@@ -2,17 +2,18 @@ import type { NextPage } from "next";
 import React, { useState } from "react";
 import { AddressSearch } from "../components/AddressSearch";
 import { FormState } from "../../types/form-types";
-import { Button } from "@chakra-ui/react";
-import { PlaceObject } from "../../types/placeTypes";
+import { Heading } from "@chakra-ui/react";
 import {
-  getNearbyPlaces,
-  getPlaceDetails,
-} from "../components/hooks/placesHook";
-import { Result } from "../../types/api-response-types";
+  NearbySearchObject,
+  NearbySearchResponse,
+} from "../../types/placeTypes";
+import { getNearbyPlaces } from "../components/hooks/placesHook";
 import { getLatLng, randomInt } from "../components/utils";
 
 const Home: NextPage = () => {
-  const [chosenPlace, setChosenPlace] = useState(null);
+  const [chosenPlace, setChosenPlace] = useState<
+    NearbySearchObject | undefined
+  >(undefined);
 
   const [formState, setFormState] = useState<FormState>({
     id: "",
@@ -28,17 +29,19 @@ const Home: NextPage = () => {
       longitude,
       formState.radius,
       formState.keywords
-    )) as [];
+    )) as NearbySearchResponse;
+    console.debug(nearbyData);
     setChosenPlace(nearbyData[randomInt(0, nearbyData.length)]);
   };
 
   return (
     <>
-      <AddressSearch formState={formState} setFormState={setFormState} />
-      {/*<DisplayRestaurant placeObject={placeObject} />*/}
-      <Button onClick={() => getRandomRestaurants()}>
-        Click to generate restaurants
-      </Button>
+      <AddressSearch
+        onSubmit={getRandomRestaurants}
+        formState={formState}
+        setFormState={setFormState}
+      />
+      <Heading>{chosenPlace?.name || ""}</Heading>
     </>
   );
 };
