@@ -58,6 +58,7 @@ export interface Photo {
   height: number;
   html_attributions: string[];
   width: number;
+  getUrl: () => string;
 }
 
 export interface PlusCode {

@@ -18,7 +18,6 @@ const Home: NextPage = () => {
   const [chosenPlace, setChosenPlace] = useState<
     PlaceDetailsObject | undefined
   >(undefined);
-  const [loadingCard, setLoadingCard] = useState(true);
 
   const [formState, setFormState] = useState<FormState>({
     id: "",
@@ -40,7 +39,6 @@ const Home: NextPage = () => {
       chosen?.place_id
     )) as PlaceDetailsObject;
     setChosenPlace(placeDetails);
-    setLoadingCard(false)
   };
 
   return (
@@ -50,12 +48,10 @@ const Home: NextPage = () => {
         formState={formState}
         setFormState={setFormState}
       />
-      {loadingCard ? (
-        <Spinner />
-      ) : (
+      {chosenPlace && (
         <PlaceCard
           name={chosenPlace?.name || ""}
-          image={chosenPlace?.photos?.[0]?.getUrl()}
+          image={chosenPlace?.photos?.[0]?.getUrl() || ""}
           mapLink={chosenPlace?.url || ""}
         />
       )}
