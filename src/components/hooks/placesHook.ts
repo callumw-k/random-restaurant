@@ -51,7 +51,7 @@ const placeFetch = async (url: string) => {
   }
 };
 
-export const getPlaceDetails = async (id: string) =>
+export const getPlaceDetails = async (id: string | undefined) =>
   await new Promise((resolve, reject) => {
     if (!id) {
       return reject("Need valid id input");
