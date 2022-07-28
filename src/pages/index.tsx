@@ -23,22 +23,27 @@ const Home: NextPage = () => {
     id: "",
     address: "",
     radius: "",
-    keywords: "",
+    keywords: undefined,
   });
 
   const getRandomRestaurants = async () => {
     const { latitude, longitude } = await getLatLng(formState.id);
-    const nearbyData = (await getNearbyPlaces(
+    const nearbyDataResponse = (await getNearbyPlaces(
       latitude,
       longitude,
       formState.radius,
       formState.keywords
     )) as NearbySearchResponse;
-    const chosen = nearbyData[randomInt(0, nearbyData.length - 1)];
-    const placeDetails = (await getPlaceDetails(
-      chosen?.place_id
-    )) as PlaceDetailsObject;
-    setChosenPlace(placeDetails);
+    if (nearbyDataResponse.status === "OK") {
+      const { nearbyData } = nearbyDataResponse;
+      const chosen = nearbyData[randomInt(0, nearbyData.length - 1)];
+      const placeDetails = (await getPlaceDetails(
+        chosen?.place_id
+      )) as PlaceDetailsObject;
+      setChosenPlace(placeDetails);
+    } else {
+      console.debug(nearbyDataResponse.message);
+    }
   };
 
   return (

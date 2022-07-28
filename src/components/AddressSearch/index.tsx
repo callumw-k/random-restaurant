@@ -11,7 +11,13 @@ import {
 } from "@chakra-ui/react";
 import { FormState, PlaceArray } from "../../../types/form-types";
 import { googleAutocomplete } from "../hooks/placesHook";
-import { AsyncSelect, SingleValue } from "chakra-react-select";
+import {
+  AsyncSelect,
+  MultiValue,
+  Select,
+  SingleValue,
+} from "chakra-react-select";
+import { listOfCuisines } from "../utils/cuisine";
 
 const handleChange = async (string: string) => {
   if (string) {
@@ -52,7 +58,7 @@ export const AddressSearch = ({
   };
 
   return (
-    <Box >
+    <Box>
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -77,30 +83,50 @@ export const AddressSearch = ({
             />
             <FormHelperText pos="relative">Input your address.</FormHelperText>
           </FormControl>
-          <HStack alignItems="flex-start">
-            <FormControl>
-              <FormLabel htmlFor="radius">Radius</FormLabel>
-              <Input
-                onChange={(e) => handleInputChange(e)}
-                type="number"
-                name="radius"
-                value={formState.radius}
-              />
-              <FormHelperText>Radius (in metres).</FormHelperText>
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="keywords">Keywords</FormLabel>
-              <Input
-                type="string"
-                value={formState.keywords}
-                onChange={(e) => handleInputChange(e)}
-                name="keywords"
-              />
-              <FormHelperText>
-                Keywords to search for, i.e. indian, restaurant
-              </FormHelperText>
-            </FormControl>
-          </HStack>
+          <FormControl>
+            <FormLabel htmlFor="radius">Radius</FormLabel>
+            <Input
+              onChange={(e) => handleInputChange(e)}
+              type="number"
+              name="radius"
+              value={formState.radius}
+            />
+            <FormHelperText>Radius (in metres).</FormHelperText>
+          </FormControl>
+
+          <FormControl>
+            <FormLabel htmlFor="keywords">Keywords</FormLabel>
+            <Select
+              useBasicStyles
+              isMulti
+              onChange={(
+                newValue: MultiValue<{ label: string; value: string }>
+              ): void => {
+                console.debug(
+                  newValue.some((value) => value.value === "any-cuisine")
+                );
+                if (newValue.some((value) => value.value === "any-cuisine")) {
+                  const listOfValues = listOfCuisines
+                    .map((cuisine) => cuisine.value)
+                    .filter((value) => value !== "any-cuisine");
+                  setFormState({
+                    ...formState,
+                    keywords: listOfValues,
+                  });
+                } else {
+                  setFormState({
+                    ...formState,
+                    keywords: newValue.map((item) => item.value),
+                  });
+                }
+              }}
+              name="keywords"
+              options={listOfCuisines}
+            />
+            <FormHelperText>
+              Keywords to search for, i.e. indian, restaurant
+            </FormHelperText>
+          </FormControl>
           <Button type="submit">Submit</Button>
         </VStack>
       </form>
