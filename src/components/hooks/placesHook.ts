@@ -1,4 +1,5 @@
 import { splitAndJoinString } from "../utils";
+import { throws } from "assert";
 
 let fakeMap: HTMLDivElement;
 if (typeof document !== "undefined") {
@@ -38,19 +39,6 @@ export const createUrl = (type: "PlaceDetails" | "NearbySearch"): string => {
   }
 };
 
-const placeFetch = async (url: string) => {
-  try {
-    const data = await fetch(url, {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-      },
-    });
-    return await data.json();
-  } catch (e) {
-    throw e;
-  }
-};
-
 export const getPlaceDetails = async (id: string | undefined) =>
   await new Promise((resolve, reject) => {
     if (!id) {
@@ -73,22 +61,13 @@ export const getPlaceDetails = async (id: string | undefined) =>
     }
   });
 
-export const getNearbyPlaces = async (
+const getNearbyPlace = (
+  keyword: string,
   lat: number,
   lng: number,
-  radius: string,
-  keywords: string
-) => {
-  const intRadius = parseInt(radius);
-  const keyword = encodeURIComponent(splitAndJoinString(keywords));
-  console.debug(keyword);
-  return await new Promise((resolve, reject) => {
-    if (!lat || !lng) {
-      return reject("Need valid lat and lng input");
-    }
-    if (typeof window === "undefined") {
-      return reject("Need valid window object");
-    }
+  intRadius: number
+) =>
+  new Promise((resolve, reject) => {
     try {
       const latLangObj = new window.google.maps.LatLng(lat, lng);
       new window.google.maps.places.PlacesService(fakeMap).nearbySearch(
@@ -99,4 +78,31 @@ export const getNearbyPlaces = async (
       reject(e);
     }
   });
+
+export const getNearbyPlaces = async (
+  lat: number,
+  lng: number,
+  radius: string,
+  keywords: string[] | undefined
+) => {
+  const intRadius = parseInt(radius);
+  console.debug(keywords);
+
+  if (!lat || !lng) {
+    return { status: "error", message: "Need valid lat and lng input" };
+  } else if (!keywords || !keywords.length) {
+    return { status: "error", message: "Please select keywords" };
+  } else if (typeof window === "undefined") {
+    return { status: "error", message: "Window not defined" };
+  }
+
+  return await Promise.all(
+    keywords.map((keyword) => getNearbyPlace(keyword, lat, lng, intRadius))
+  )
+    .then((data) => {
+      return { status: "OK", nearbyData: data.flat() };
+    })
+    .catch((e) => {
+      return { status: "error", message: e };
+    });
 };

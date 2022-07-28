@@ -7,7 +7,9 @@ const placeObject = z.object({
 
 export type PlaceObject = z.infer<typeof placeObject>;
 
-export type NearbySearchResponse = NearbySearchObject[];
+export type NearbySearchResponse =
+  | { status: "OK"; nearbyData: NearbySearchObject[] }
+  | { status: "error"; message: string };
 
 export interface NearbySearchObject {
   business_status: string;
