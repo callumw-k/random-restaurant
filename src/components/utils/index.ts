@@ -8,12 +8,11 @@ export const splitAndJoinString = (string: string) => {
 export const getLatLng = async (mapsId: string) => {
   const placeData = (await getPlaceDetails(mapsId)) as Result;
   return {
-    latitude: placeData?.geometry.location.lat(),
-    longitude: placeData?.geometry.location.lng(),
+    originLat: placeData?.geometry.location.lat(),
+    originLng: placeData?.geometry.location.lng(),
   };
 };
 
 export const randomInt = (min: number, max: number) => {
-  const rand = Math.floor(Math.random() * (max - min + 1)) + min;
-  return rand;
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 };

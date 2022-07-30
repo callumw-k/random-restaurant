@@ -37,7 +37,10 @@ export interface Geometry {
   viewport: Viewport;
 }
 
-export interface Location {}
+export interface Location {
+  lat: () => number;
+  lng: () => number;
+}
 
 export interface Viewport {
   vb: Vb;

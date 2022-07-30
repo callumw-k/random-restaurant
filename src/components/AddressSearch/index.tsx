@@ -5,7 +5,6 @@ import {
   FormControl,
   FormHelperText,
   FormLabel,
-  HStack,
   Input,
   VStack,
 } from "@chakra-ui/react";
@@ -22,13 +21,12 @@ import { listOfCuisines } from "../utils/cuisine";
 const handleChange = async (string: string) => {
   if (string) {
     const results = (await googleAutocomplete(string)) as PlaceArray;
-    const parsedResults = results?.map((result) => {
+    return results?.map((result) => {
       return {
         label: `${result.structured_formatting.main_text}, ${result.structured_formatting.secondary_text}`,
         value: result.place_id,
       };
     });
-    return parsedResults;
   } else {
     return [{ label: "", value: "" }];
   }
@@ -53,7 +51,7 @@ export const AddressSearch = ({
     setFormState({
       ...formState,
       address: newValue?.label || "",
-      id: newValue?.value || "",
+      originId: newValue?.value || "",
     });
   };
 
