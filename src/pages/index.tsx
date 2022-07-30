@@ -7,13 +7,10 @@ import {
   NearbySearchResponse,
   PlaceDetailsObject,
 } from "../../types/placeTypes";
-import {
-  getDistance,
-  getNearbyPlaces,
-  getPlaceDetails,
-} from "../components/hooks/placesHook";
 import { getLatLng, randomInt } from "../components/utils";
 import PlaceCard from "../components/PlaceCard";
+import { getNearbyPlaces, getPlaceDetails } from "../components/hooks/places";
+import { getDistance } from "../components/hooks/distance";
 
 const Home: NextPage = () => {
   const [chosenPlace, setChosenPlace] = useState<

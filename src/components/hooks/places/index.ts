@@ -1,40 +1,9 @@
+import { createLatLangObject } from "./utils";
+
 let fakeMap: HTMLDivElement;
 if (typeof document !== "undefined") {
   fakeMap = document.createElement("div");
 }
-
-export const googleAutocomplete = async (text: string) =>
-  new Promise((resolve, reject) => {
-    if (!text) {
-      return reject("Need valid text input");
-    }
-
-    // for use in things like GatsbyJS where the html is generated first
-    if (typeof window === "undefined") {
-      return reject("Need valid window object");
-    }
-
-    try {
-      new window.google.maps.places.AutocompleteService().getPlacePredictions(
-        { input: text, componentRestrictions: { country: "au" } },
-        resolve
-      );
-    } catch (e) {
-      reject(e);
-    }
-  });
-
-export const createUrl = (type: "PlaceDetails" | "NearbySearch"): string => {
-  const baseUrl = "https://maps.googleapis.com/maps/api/place";
-  switch (type) {
-    case "PlaceDetails":
-      return `${baseUrl}/details/json?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`;
-    case "NearbySearch":
-      return `${baseUrl}/nearbysearch/json?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`;
-    default:
-      return "";
-  }
-};
 
 export const getPlaceDetails = async (id: string | undefined) =>
   await new Promise((resolve, reject) => {
@@ -57,9 +26,6 @@ export const getPlaceDetails = async (id: string | undefined) =>
       reject(e);
     }
   });
-
-const createLatLangObject = (lat: number, lng: number) =>
-  new window.google.maps.LatLng(lat, lng);
 
 const getNearbyPlace = (
   keyword: string,
@@ -106,23 +72,3 @@ export const getNearbyPlaces = async (
       return { status: "error", message: e };
     });
 };
-
-export const getDistance = (
-  origin: { lat: number; lng: number },
-  destination: { lat: number; lng: number },
-  travelMode: string
-) =>
-  new Promise((resolve, reject) => {
-    try {
-      new window.google.maps.DistanceMatrixService().getDistanceMatrix(
-        {
-          origins: [createLatLangObject(origin.lat, origin.lng)],
-          destinations: [createLatLangObject(destination.lat, destination.lng)],
-          travelMode: travelMode as any,
-        },
-        resolve
-      );
-    } catch (e) {
-      reject(e);
-    }
-  });
