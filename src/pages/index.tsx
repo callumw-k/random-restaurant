@@ -2,12 +2,13 @@ import type { NextPage } from "next";
 import React, { useState } from "react";
 import { AddressSearch } from "../components/AddressSearch";
 import { FormState } from "../../types/form-types";
-import { Container, Spinner } from "@chakra-ui/react";
+import { Container } from "@chakra-ui/react";
 import {
   NearbySearchResponse,
   PlaceDetailsObject,
 } from "../../types/placeTypes";
 import {
+  getDistance,
   getNearbyPlaces,
   getPlaceDetails,
 } from "../components/hooks/placesHook";
@@ -20,23 +21,32 @@ const Home: NextPage = () => {
   >(undefined);
 
   const [formState, setFormState] = useState<FormState>({
-    id: "",
+    originId: "",
     address: "",
     radius: "",
     keywords: undefined,
   });
 
   const getRandomRestaurants = async () => {
-    const { latitude, longitude } = await getLatLng(formState.id);
+    const { originLat, originLng } = await getLatLng(formState.originId);
     const nearbyDataResponse = (await getNearbyPlaces(
-      latitude,
-      longitude,
+      originLat,
+      originLng,
       formState.radius,
       formState.keywords
     )) as NearbySearchResponse;
     if (nearbyDataResponse.status === "OK") {
       const { nearbyData } = nearbyDataResponse;
       const chosen = nearbyData[randomInt(0, nearbyData.length - 1)];
+      const distance = await getDistance(
+        { lat: originLat, lng: originLng },
+        {
+          lat: chosen?.geometry.location.lat() || 0,
+          lng: chosen?.geometry.location.lng() || 0,
+        },
+        "WALKING"
+      );
+      console.debug(distance);
       const placeDetails = (await getPlaceDetails(
         chosen?.place_id
       )) as PlaceDetailsObject;

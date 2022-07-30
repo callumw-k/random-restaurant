@@ -1,5 +1,5 @@
 export interface FormState {
-  id: string;
+  originId: string;
   address: string;
   radius: string;
   keywords?: string[];

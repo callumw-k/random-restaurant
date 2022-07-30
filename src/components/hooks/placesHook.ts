@@ -1,6 +1,3 @@
-import { splitAndJoinString } from "../utils";
-import { throws } from "assert";
-
 let fakeMap: HTMLDivElement;
 if (typeof document !== "undefined") {
   fakeMap = document.createElement("div");
@@ -61,6 +58,9 @@ export const getPlaceDetails = async (id: string | undefined) =>
     }
   });
 
+const createLatLangObject = (lat: number, lng: number) =>
+  new window.google.maps.LatLng(lat, lng);
+
 const getNearbyPlace = (
   keyword: string,
   lat: number,
@@ -69,7 +69,7 @@ const getNearbyPlace = (
 ) =>
   new Promise((resolve, reject) => {
     try {
-      const latLangObj = new window.google.maps.LatLng(lat, lng);
+      const latLangObj = createLatLangObject(lat, lng);
       new window.google.maps.places.PlacesService(fakeMap).nearbySearch(
         { location: latLangObj, radius: intRadius, keyword },
         resolve
@@ -106,3 +106,23 @@ export const getNearbyPlaces = async (
       return { status: "error", message: e };
     });
 };
+
+export const getDistance = (
+  origin: { lat: number; lng: number },
+  destination: { lat: number; lng: number },
+  travelMode: string
+) =>
+  new Promise((resolve, reject) => {
+    try {
+      new window.google.maps.DistanceMatrixService().getDistanceMatrix(
+        {
+          origins: [createLatLangObject(origin.lat, origin.lng)],
+          destinations: [createLatLangObject(destination.lat, destination.lng)],
+          travelMode: travelMode as any,
+        },
+        resolve
+      );
+    } catch (e) {
+      reject(e);
+    }
+  });
