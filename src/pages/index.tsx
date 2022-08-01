@@ -16,6 +16,8 @@ const Home: NextPage = () => {
     address: "",
     radius: "",
     keywords: undefined,
+    // @ts-ignore
+    travelMode: "WALKING",
   });
 
   return (

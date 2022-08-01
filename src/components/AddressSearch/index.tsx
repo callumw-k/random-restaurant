@@ -1,11 +1,16 @@
-import React, { Dispatch, SetStateAction } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import {
   Box,
   Button,
   FormControl,
   FormHelperText,
   FormLabel,
+  HStack,
   Input,
+  Radio,
+  RadioGroup,
+  Spinner,
+  Stack,
   VStack,
 } from "@chakra-ui/react";
 import { FormState } from "../../../types/form-types";
@@ -15,6 +20,7 @@ import { SearchAddress } from "../SearchAddress";
 import { getRandomDestination } from "../hooks/places";
 import PlaceResult = google.maps.places.PlaceResult;
 import { flattenDistance, getDistance } from "../hooks/distance";
+import TravelMode = google.maps.TravelMode;
 
 export const AddressSearch = ({
   formState,
@@ -25,6 +31,8 @@ export const AddressSearch = ({
   setFormState: Dispatch<SetStateAction<FormState>>;
   setDestination: Dispatch<SetStateAction<PlaceResult | undefined>>;
 }) => {
+  const [formLoading, setFormLoading] = useState(false);
+  const [error, setError] = useState<string | undefined>();
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormState({ ...formState, [e.target.name]: e.target.value });
   };
@@ -49,6 +57,7 @@ export const AddressSearch = ({
   };
 
   const getRandomRestaurants = async () => {
+    setFormLoading(true);
     try {
       const { placeDetails, originLng, originLat } = await getRandomDestination(
         formState.originId,
@@ -61,7 +70,7 @@ export const AddressSearch = ({
           lat: placeDetails?.geometry?.location?.lat() || 0,
           lng: placeDetails?.geometry?.location?.lng() || 0,
         },
-        "WALKING"
+        formState.travelMode
       );
       const flattenedDistance = flattenDistance(distance);
       if (
@@ -70,10 +79,12 @@ export const AddressSearch = ({
       ) {
         setTimeout(async () => getRandomRestaurants(), 300);
       } else {
+        setFormLoading(false);
         setDestination(placeDetails);
       }
     } catch (e) {
-      console.log(e);
+      console.debug(`${e}`);
+      setError("Something went wrong. Please try again.");
     }
   };
 
@@ -98,6 +109,22 @@ export const AddressSearch = ({
             <FormHelperText>Radius (in metres).</FormHelperText>
           </FormControl>
           <FormControl>
+            <FormLabel htmlFor="travelMode">Travel Mode</FormLabel>
+            <RadioGroup
+              onChange={(e: TravelMode) =>
+                setFormState({ ...formState, travelMode: e })
+              }
+              value={formState.travelMode}
+            >
+              <Stack direction="row">
+                <Radio value="WALKING">Walking</Radio>
+                <Radio value="TRANSIT">Transit</Radio>
+                <Radio value="DRIVING">Driving</Radio>
+              </Stack>
+            </RadioGroup>
+          </FormControl>
+
+          <FormControl>
             <FormLabel htmlFor="keywords">Keywords</FormLabel>
             <Select
               useBasicStyles
@@ -110,7 +137,10 @@ export const AddressSearch = ({
               Keywords to search for, i.e. indian, restaurant
             </FormHelperText>
           </FormControl>
-          <Button type="submit">Submit</Button>
+          <HStack spacing={4}>
+            <Button type="submit">Submit</Button>
+            {formLoading && <Spinner />}
+          </HStack>
         </VStack>
       </form>
     </Box>
