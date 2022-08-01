@@ -3,7 +3,7 @@ import TravelMode = google.maps.TravelMode;
 export interface FormState {
   originId: string;
   address: string;
-  radius: string;
+  distance: string;
   keywords?: string[];
   travelMode: TravelMode;
 }

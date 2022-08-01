@@ -61,7 +61,6 @@ export const AddressSearch = ({
     try {
       const { placeDetails, originLng, originLat } = await getRandomDestination(
         formState.originId,
-        formState.radius,
         formState.keywords
       );
       const distance = await getDistance(
@@ -75,7 +74,7 @@ export const AddressSearch = ({
       const flattenedDistance = flattenDistance(distance);
       if (
         flattenedDistance.durationValue &&
-        flattenedDistance.durationValue > 600
+        flattenedDistance.durationValue > parseInt(formState.distance) * 60
       ) {
         setTimeout(async () => getRandomRestaurants(), 300);
       } else {
@@ -99,14 +98,14 @@ export const AddressSearch = ({
         <VStack alignItems="flex-start" spacing={4}>
           <SearchAddress formState={formState} setFormState={setFormState} />
           <FormControl>
-            <FormLabel htmlFor="radius">Radius</FormLabel>
+            <FormLabel htmlFor="distance">Distance</FormLabel>
             <Input
               onChange={(e) => handleInputChange(e)}
               type="number"
-              name="radius"
-              value={formState.radius}
+              name="distance"
+              value={formState.distance}
             />
-            <FormHelperText>Radius (in metres).</FormHelperText>
+            <FormHelperText>Distance (minutes).</FormHelperText>
           </FormControl>
           <FormControl>
             <FormLabel htmlFor="travelMode">Travel Mode</FormLabel>
