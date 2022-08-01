@@ -29,17 +29,16 @@ export const getPlaceDetails = async (id: string | undefined) =>
     }
   });
 
-const getNearbyPlace = (
-  keyword: string,
-  lat: number,
-  lng: number,
-  intRadius: number
-) =>
+const getNearbyPlace = (keyword: string, lat: number, lng: number) =>
   new Promise<PlaceResult[] | null>((resolve, reject) => {
     try {
       const latLangObj = createLatLangObject(lat, lng);
       new window.google.maps.places.PlacesService(fakeMap).nearbySearch(
-        { location: latLangObj, radius: intRadius, keyword },
+        {
+          location: latLangObj,
+          keyword,
+          rankBy: google.maps.places.RankBy.DISTANCE,
+        },
         (results, status) => {
           if (status == google.maps.places.PlacesServiceStatus.OK) {
             resolve(results);
@@ -56,11 +55,8 @@ const getNearbyPlace = (
 export const getNearbyPlaces = (
   lat: number,
   lng: number,
-  radius: string,
   keywords: string[] | undefined
 ): Promise<(PlaceResult | null)[]> => {
-  const intRadius = parseInt(radius);
-
   if (!lat || !lng) {
     throw new Error("Need valid lat and lng input");
   } else if (!keywords || !keywords.length) {
@@ -70,7 +66,7 @@ export const getNearbyPlaces = (
   }
 
   return Promise.all(
-    keywords.map((keyword) => getNearbyPlace(keyword, lat, lng, intRadius))
+    keywords.map((keyword) => getNearbyPlace(keyword, lat, lng))
   )
     .then((data) => data.flat())
     .catch((e) => {
@@ -91,7 +87,6 @@ export const getLatLngFromId = async (mapsId: string) => {
 
 export const getRandomDestination = async (
   mapId: string,
-  radius: string,
   keywords: string[] | undefined
 ): Promise<{
   placeDetails: PlaceResult;
@@ -103,7 +98,6 @@ export const getRandomDestination = async (
     const nearbyPlaceData = await getNearbyPlaces(
       originLat,
       originLng,
-      radius,
       keywords
     );
     const randomDestination =

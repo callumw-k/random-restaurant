@@ -14,7 +14,7 @@ const Home: NextPage = () => {
   const [formState, setFormState] = useState<FormState>({
     originId: "",
     address: "",
-    radius: "",
+    distance: "",
     keywords: undefined,
     // @ts-ignore
     travelMode: "WALKING",
