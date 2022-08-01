@@ -1,5 +1,5 @@
-import { getPlaceDetails } from "../hooks/placesHook";
 import { Result } from "../../../types/api-response-types";
+import { getPlaceDetails } from "../hooks/places";
 
 export const splitAndJoinString = (string: string) => {
   return string.split(" ").join("");

@@ -9,7 +9,6 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { FormState, PlaceArray } from "../../../types/form-types";
-import { googleAutocomplete } from "../hooks/placesHook";
 import {
   AsyncSelect,
   MultiValue,
@@ -17,6 +16,7 @@ import {
   SingleValue,
 } from "chakra-react-select";
 import { listOfCuisines } from "../utils/cuisine";
+import { googleAutocomplete } from "../hooks/autoComplete";
 
 const handleChange = async (string: string) => {
   if (string) {
