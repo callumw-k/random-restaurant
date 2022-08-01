@@ -8,79 +8,85 @@ import {
   Input,
   VStack,
 } from "@chakra-ui/react";
-import { FormState, PlaceArray } from "../../../types/form-types";
-import {
-  AsyncSelect,
-  MultiValue,
-  Select,
-  SingleValue,
-} from "chakra-react-select";
+import { FormState } from "../../../types/form-types";
+import { MultiValue, Select } from "chakra-react-select";
 import { listOfCuisines } from "../utils/cuisine";
-import { googleAutocomplete } from "../hooks/autoComplete";
-
-const handleChange = async (string: string) => {
-  if (string) {
-    const results = (await googleAutocomplete(string)) as PlaceArray;
-    return results?.map((result) => {
-      return {
-        label: `${result.structured_formatting.main_text}, ${result.structured_formatting.secondary_text}`,
-        value: result.place_id,
-      };
-    });
-  } else {
-    return [{ label: "", value: "" }];
-  }
-};
+import { SearchAddress } from "../SearchAddress";
+import { getRandomDestination } from "../hooks/places";
+import PlaceResult = google.maps.places.PlaceResult;
+import { flattenDistance, getDistance } from "../hooks/distance";
 
 export const AddressSearch = ({
   formState,
   setFormState,
-  onSubmit,
+  setDestination,
 }: {
   formState: FormState;
   setFormState: Dispatch<SetStateAction<FormState>>;
-  onSubmit: () => void;
+  setDestination: Dispatch<SetStateAction<PlaceResult | undefined>>;
 }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormState({ ...formState, [e.target.name]: e.target.value });
   };
 
-  const handleReactSelect = (
-    newValue: SingleValue<{ label: string; value: string }>
-  ) => {
-    setFormState({
-      ...formState,
-      address: newValue?.label || "",
-      originId: newValue?.value || "",
-    });
+  const handleKeywords = (
+    keyWordArray: MultiValue<{ label: string; value: string }>
+  ): void => {
+    if (keyWordArray.some((value) => value.value === "any-cuisine")) {
+      const listOfValues = listOfCuisines
+        .map((cuisine) => cuisine.value)
+        .filter((value) => value !== "any-cuisine");
+      setFormState({
+        ...formState,
+        keywords: listOfValues,
+      });
+    } else {
+      setFormState({
+        ...formState,
+        keywords: keyWordArray.map((item) => item.value),
+      });
+    }
+  };
+
+  const getRandomRestaurants = async () => {
+    try {
+      const { placeDetails, originLng, originLat } = await getRandomDestination(
+        formState.originId,
+        formState.radius,
+        formState.keywords
+      );
+      const distance = await getDistance(
+        { lat: originLat, lng: originLng },
+        {
+          lat: placeDetails?.geometry?.location?.lat() || 0,
+          lng: placeDetails?.geometry?.location?.lng() || 0,
+        },
+        "WALKING"
+      );
+      const flattenedDistance = flattenDistance(distance);
+      if (
+        flattenedDistance.durationValue &&
+        flattenedDistance.durationValue > 600
+      ) {
+        setTimeout(async () => getRandomRestaurants(), 300);
+      } else {
+        setDestination(placeDetails);
+      }
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   return (
     <Box>
       <form
-        onSubmit={(event) => {
+        onSubmit={async (event) => {
           event.preventDefault();
-          onSubmit();
+          await getRandomRestaurants();
         }}
       >
         <VStack alignItems="flex-start" spacing={4}>
-          <FormControl>
-            <FormLabel htmlFor="address">Address</FormLabel>
-            <AsyncSelect
-              className="Autocomplete"
-              useBasicStyles
-              name="address"
-              onChange={(
-                newValue: SingleValue<{ label: string; value: string }>
-              ) => {
-                handleReactSelect(newValue);
-              }}
-              loadOptions={async (inputValue) => {
-                return await handleChange(inputValue);
-              }}
-            />
-            <FormHelperText pos="relative">Input your address.</FormHelperText>
-          </FormControl>
+          <SearchAddress formState={formState} setFormState={setFormState} />
           <FormControl>
             <FormLabel htmlFor="radius">Radius</FormLabel>
             <Input
@@ -91,33 +97,12 @@ export const AddressSearch = ({
             />
             <FormHelperText>Radius (in metres).</FormHelperText>
           </FormControl>
-
           <FormControl>
             <FormLabel htmlFor="keywords">Keywords</FormLabel>
             <Select
               useBasicStyles
               isMulti
-              onChange={(
-                newValue: MultiValue<{ label: string; value: string }>
-              ): void => {
-                console.debug(
-                  newValue.some((value) => value.value === "any-cuisine")
-                );
-                if (newValue.some((value) => value.value === "any-cuisine")) {
-                  const listOfValues = listOfCuisines
-                    .map((cuisine) => cuisine.value)
-                    .filter((value) => value !== "any-cuisine");
-                  setFormState({
-                    ...formState,
-                    keywords: listOfValues,
-                  });
-                } else {
-                  setFormState({
-                    ...formState,
-                    keywords: newValue.map((item) => item.value),
-                  });
-                }
-              }}
+              onChange={(keyWordArray) => handleKeywords(keyWordArray)}
               name="keywords"
               options={listOfCuisines}
             />
