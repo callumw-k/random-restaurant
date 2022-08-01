@@ -35,11 +35,13 @@ const PlaceCard = ({
           alt={name}
         />
       </Box>
-      <Stack padding={{ base: 4}} justifyContent="center">
+      <Stack padding={{ base: 4 }} justifyContent="center">
         <Heading as="h1" size="md">
           {name}
         </Heading>
-        <Link href={mapLink}>{mapLink}</Link>
+        <Link target="_blank" href={mapLink}>
+          {mapLink}
+        </Link>
       </Stack>
     </Stack>
   );

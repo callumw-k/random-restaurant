@@ -1,10 +1,11 @@
 import { createLatLangObject } from "../places/utils";
 import DistanceMatrixResponse = google.maps.DistanceMatrixResponse;
+import TravelMode = google.maps.TravelMode;
 
 export const getDistance = (
   origin: { lat: number; lng: number },
   destination: { lat: number; lng: number },
-  travelMode: string
+  travelMode: TravelMode
 ) =>
   new Promise<DistanceMatrixResponse>((resolve, reject) => {
     try {
@@ -12,7 +13,7 @@ export const getDistance = (
         {
           origins: [createLatLangObject(origin.lat, origin.lng)],
           destinations: [createLatLangObject(destination.lat, destination.lng)],
-          travelMode: travelMode as any,
+          travelMode: travelMode,
         },
         (response, status) => {
           if (response && status == "OK") {

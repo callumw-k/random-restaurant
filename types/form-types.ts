@@ -1,8 +1,11 @@
+import TravelMode = google.maps.TravelMode;
+
 export interface FormState {
   originId: string;
   address: string;
   radius: string;
   keywords?: string[];
+  travelMode: TravelMode;
 }
 
 export type PlaceArray = PlaceObject[];
