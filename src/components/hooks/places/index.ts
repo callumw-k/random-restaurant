@@ -93,7 +93,11 @@ export const getRandomDestination = async (
   mapId: string,
   radius: string,
   keywords: string[] | undefined
-): Promise<PlaceResult> => {
+): Promise<{
+  placeDetails: PlaceResult;
+  originLat: number;
+  originLng: number;
+}> => {
   try {
     const { originLat, originLng } = await getLatLngFromId(mapId);
     const nearbyPlaceData = await getNearbyPlaces(
@@ -104,8 +108,13 @@ export const getRandomDestination = async (
     );
     const randomDestination =
       nearbyPlaceData[randomInt(0, nearbyPlaceData.length - 1)];
-    return await getPlaceDetails(randomDestination?.place_id);
+    const placeDetails = await getPlaceDetails(randomDestination?.place_id);
+    return {
+      placeDetails,
+      originLat,
+      originLng,
+    };
   } catch (e) {
-    throw new Error(`Get Random Restaurant error: ${e}`);
+    throw new Error(`Could not get random destination: ${e}`);
   }
 };

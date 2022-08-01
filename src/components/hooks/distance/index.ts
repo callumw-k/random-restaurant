@@ -1,6 +1,5 @@
 import { createLatLangObject } from "../places/utils";
-import { DistanceResponse } from "../../../../types/distance-types";
-import { DistanceMatrixResponse } from "@googlemaps/google-maps-services-js";
+import DistanceMatrixResponse = google.maps.DistanceMatrixResponse;
 
 export const getDistance = (
   origin: { lat: number; lng: number },
@@ -16,8 +15,8 @@ export const getDistance = (
           travelMode: travelMode as any,
         },
         (response, status) => {
-          if (status == "OK") {
-            resolve(response as DistanceResponse);
+          if (response && status == "OK") {
+            resolve(response);
           } else {
             reject(status);
           }
@@ -28,9 +27,12 @@ export const getDistance = (
     }
   });
 
-export const flattenedDistance = (distanceObject: DistanceResponse) => {
+export const flattenDistance = (distanceObject: DistanceMatrixResponse) => {
   if (distanceObject.rows.length > 1) {
     throw new Error("Distance matrix should have only one row");
   }
-  console.debug(distanceObject);
+  return {
+    durationText: distanceObject?.rows?.[0]?.elements?.[0]?.duration.text,
+    durationValue: distanceObject?.rows?.[0]?.elements?.[0]?.duration.value,
+  };
 };

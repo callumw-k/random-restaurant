@@ -14,6 +14,7 @@ import { listOfCuisines } from "../utils/cuisine";
 import { SearchAddress } from "../SearchAddress";
 import { getRandomDestination } from "../hooks/places";
 import PlaceResult = google.maps.places.PlaceResult;
+import { flattenDistance, getDistance } from "../hooks/distance";
 
 export const AddressSearch = ({
   formState,
@@ -49,21 +50,28 @@ export const AddressSearch = ({
 
   const getRandomRestaurants = async () => {
     try {
-      const randomDestination = await getRandomDestination(
+      const { placeDetails, originLng, originLat } = await getRandomDestination(
         formState.originId,
         formState.radius,
         formState.keywords
       );
-      setDestination(randomDestination);
-      // const distance = (await getDistance(
-      //   { lat: form, lng: originLng },
-      //   {
-      //     lat: randomDestination?.geometry.location.lat() || 0,
-      //     lng: randomDestination?.geometry.location.lng() || 0,
-      //   },
-      //   "WALKING"
-      // )) as DistanceResponse;
-      // flattenedDistance(distance);
+      const distance = await getDistance(
+        { lat: originLat, lng: originLng },
+        {
+          lat: placeDetails?.geometry?.location?.lat() || 0,
+          lng: placeDetails?.geometry?.location?.lng() || 0,
+        },
+        "WALKING"
+      );
+      const flattenedDistance = flattenDistance(distance);
+      if (
+        flattenedDistance.durationValue &&
+        flattenedDistance.durationValue > 600
+      ) {
+        setTimeout(async () => getRandomRestaurants(), 300);
+      } else {
+        setDestination(placeDetails);
+      }
     } catch (e) {
       console.log(e);
     }
