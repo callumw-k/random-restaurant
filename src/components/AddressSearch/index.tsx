@@ -72,6 +72,7 @@ export const AddressSearch = ({
         formState.travelMode
       );
       const flattenedDistance = flattenDistance(distance);
+      console.debug(flattenedDistance);
       if (
         flattenedDistance.durationValue &&
         flattenedDistance.durationValue > parseInt(formState.distance) * 60

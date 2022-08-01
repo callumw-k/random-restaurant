@@ -18,9 +18,8 @@ const PlaceCard = ({
       borderColor="grey.200"
       borderWidth="1px"
       borderRadius="lg"
-      overflow="hidden"
     >
-      <Box flex="0 1 33%" width="100%" height="inherit" maxHeight="200px">
+      <Box flex="0 1 33%" width="100%" maxHeight="150px">
         <Image
           src={image}
           width={1000}

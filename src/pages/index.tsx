@@ -21,7 +21,7 @@ const Home: NextPage = () => {
   });
 
   return (
-    <Container maxW="xl">
+    <Container maxW="xl" paddingTop={24}>
       <AddressSearch
         setDestination={setDestination}
         formState={formState}
