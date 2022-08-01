@@ -1,4 +1,6 @@
 import { createLatLangObject } from "./utils";
+import { randomInt } from "../../utils";
+import PlaceResult = google.maps.places.PlaceResult;
 
 let fakeMap: HTMLDivElement;
 if (typeof document !== "undefined") {
@@ -6,7 +8,7 @@ if (typeof document !== "undefined") {
 }
 
 export const getPlaceDetails = async (id: string | undefined) =>
-  await new Promise((resolve, reject) => {
+  await new Promise<PlaceResult>((resolve, reject) => {
     if (!id) {
       return reject("Need valid id input");
     }
@@ -18,7 +20,7 @@ export const getPlaceDetails = async (id: string | undefined) =>
         { placeId: id },
         (place, status) => {
           if (status == google.maps.places.PlacesServiceStatus.OK) {
-            resolve(place);
+            resolve(place as PlaceResult);
           }
         }
       );
@@ -33,42 +35,77 @@ const getNearbyPlace = (
   lng: number,
   intRadius: number
 ) =>
-  new Promise((resolve, reject) => {
+  new Promise<PlaceResult[] | null>((resolve, reject) => {
     try {
       const latLangObj = createLatLangObject(lat, lng);
       new window.google.maps.places.PlacesService(fakeMap).nearbySearch(
         { location: latLangObj, radius: intRadius, keyword },
-        resolve
+        (results, status) => {
+          if (status == google.maps.places.PlacesServiceStatus.OK) {
+            resolve(results);
+          } else {
+            reject(status);
+          }
+        }
       );
     } catch (e) {
-      reject(e);
+      return reject(e);
     }
   });
 
-export const getNearbyPlaces = async (
+export const getNearbyPlaces = (
   lat: number,
   lng: number,
   radius: string,
   keywords: string[] | undefined
-) => {
+): Promise<(PlaceResult | null)[]> => {
   const intRadius = parseInt(radius);
-  console.debug(keywords);
 
   if (!lat || !lng) {
-    return { status: "error", message: "Need valid lat and lng input" };
+    throw new Error("Need valid lat and lng input");
   } else if (!keywords || !keywords.length) {
-    return { status: "error", message: "Please select keywords" };
+    throw new Error("Need valid keywords input");
   } else if (typeof window === "undefined") {
-    return { status: "error", message: "Window not defined" };
+    throw new Error("Need valid window object");
   }
 
-  return await Promise.all(
+  return Promise.all(
     keywords.map((keyword) => getNearbyPlace(keyword, lat, lng, intRadius))
   )
-    .then((data) => {
-      return { status: "OK", nearbyData: data.flat() };
-    })
+    .then((data) => data.flat())
     .catch((e) => {
-      return { status: "error", message: e };
+      throw new Error(e);
     });
+};
+
+export const getLatLngFromId = async (mapsId: string) => {
+  const placeData = await getPlaceDetails(mapsId);
+  if (!placeData.geometry?.location) {
+    throw new Error("Could not get place data");
+  }
+  return {
+    originLat: placeData?.geometry?.location.lat(),
+    originLng: placeData?.geometry?.location.lng(),
+  };
+};
+
+export const getRandomDestination = async (
+  mapId: string,
+  radius: string,
+  keywords: string[] | undefined
+): Promise<PlaceResult> => {
+  try {
+    const { originLat, originLng } = await getLatLngFromId(mapId);
+    const nearbyPlaceData = await getNearbyPlaces(
+      originLat,
+      originLng,
+      radius,
+      keywords
+    );
+    const randomDestination =
+      nearbyPlaceData[randomInt(0, nearbyPlaceData.length - 1)];
+    return await getPlaceDetails(randomDestination?.place_id);
+  } catch (e) {
+    throw new Error(`Get Random Restaurant error: ${e}`);
+  }
 };
