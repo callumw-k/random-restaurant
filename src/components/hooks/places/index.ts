@@ -1,4 +1,3 @@
-import { createLatLangObject } from "./utils";
 import { randomInt } from "../../utils";
 import PlaceResult = google.maps.places.PlaceResult;
 
@@ -29,28 +28,15 @@ export const getPlaceDetails = async (id: string | undefined) =>
     }
   });
 
-const getNearbyPlace = (keyword: string, lat: number, lng: number) =>
-  new Promise<PlaceResult[] | null>((resolve, reject) => {
-    try {
-      const latLangObj = createLatLangObject(lat, lng);
-      new window.google.maps.places.PlacesService(fakeMap).nearbySearch(
-        {
-          location: latLangObj,
-          keyword,
-          rankBy: google.maps.places.RankBy.DISTANCE,
-        },
-        (results, status) => {
-          if (status == google.maps.places.PlacesServiceStatus.OK) {
-            resolve(results);
-          } else {
-            reject(status);
-          }
-        }
-      );
-    } catch (e) {
-      return reject(e);
-    }
+const getNearbyPlace = async (keyword: string, lat: number, lng: number) => {
+  const response = await fetch("/api/place/nearby-place", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ keyword, lat, lng }),
   });
+  const data = await response.json();
+  return data.results;
+};
 
 export const getNearbyPlaces = (
   lat: number,
@@ -68,7 +54,9 @@ export const getNearbyPlaces = (
   return Promise.all(
     keywords.map((keyword) => getNearbyPlace(keyword, lat, lng))
   )
-    .then((data) => data.flat())
+    .then((data) => {
+      return data.flat();
+    })
     .catch((e) => {
       throw new Error(e);
     });

@@ -1,4 +1,4 @@
-import { Box, Grid, Heading, Link, Stack } from "@chakra-ui/react";
+import { Box, Heading, Link, Stack } from "@chakra-ui/react";
 import Image from "next/future/image";
 import React from "react";
 const PlaceCard = ({

@@ -98,32 +98,33 @@ export const AddressSearch = ({
       >
         <VStack alignItems="flex-start" spacing={4}>
           <SearchAddress formState={formState} setFormState={setFormState} />
-          <FormControl>
-            <FormLabel htmlFor="distance">Distance</FormLabel>
-            <Input
-              onChange={(e) => handleInputChange(e)}
-              type="number"
-              name="distance"
-              value={formState.distance}
-            />
-            <FormHelperText>Distance (minutes).</FormHelperText>
-          </FormControl>
-          <FormControl>
-            <FormLabel htmlFor="travelMode">Travel Mode</FormLabel>
-            <RadioGroup
-              onChange={(e: TravelMode) =>
-                setFormState({ ...formState, travelMode: e })
-              }
-              value={formState.travelMode}
-            >
-              <Stack direction="row">
-                <Radio value="WALKING">Walking</Radio>
-                <Radio value="TRANSIT">Transit</Radio>
-                <Radio value="DRIVING">Driving</Radio>
-              </Stack>
-            </RadioGroup>
-          </FormControl>
-
+          <HStack alignItems="top" spacing={4}>
+            <FormControl>
+              <FormLabel htmlFor="distance">Distance</FormLabel>
+              <Input
+                onChange={(e) => handleInputChange(e)}
+                type="number"
+                name="distance"
+                value={formState.distance}
+              />
+              <FormHelperText>Distance (minutes).</FormHelperText>
+            </FormControl>
+            <FormControl>
+              <FormLabel htmlFor="travelMode">Travel Mode</FormLabel>
+              <RadioGroup
+                onChange={(e: TravelMode) =>
+                  setFormState({ ...formState, travelMode: e })
+                }
+                value={formState.travelMode}
+              >
+                <Stack direction="row">
+                  <Radio value="WALKING">Walking</Radio>
+                  <Radio value="TRANSIT">Transit</Radio>
+                  <Radio value="DRIVING">Driving</Radio>
+                </Stack>
+              </RadioGroup>
+            </FormControl>
+          </HStack>
           <FormControl>
             <FormLabel htmlFor="keywords">Keywords</FormLabel>
             <Select
