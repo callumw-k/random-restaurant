@@ -59,29 +59,14 @@ export const AddressSearch = ({
   const getRandomRestaurants = async () => {
     setFormLoading(true);
     try {
-      const { placeDetails, originLng, originLat } = await getRandomDestination(
+      const response = await getRandomDestination(
         formState.originId,
-        formState.keywords
+        formState.keywords,
+        formState.travelMode,
+        formState.distance
       );
-      const distance = await getDistance(
-        { lat: originLat, lng: originLng },
-        {
-          lat: placeDetails?.geometry?.location?.lat() || 0,
-          lng: placeDetails?.geometry?.location?.lng() || 0,
-        },
-        formState.travelMode
-      );
-      const flattenedDistance = flattenDistance(distance);
-      console.debug(flattenedDistance);
-      if (
-        flattenedDistance.durationValue &&
-        flattenedDistance.durationValue > parseInt(formState.distance) * 60
-      ) {
-        setTimeout(async () => getRandomRestaurants(), 300);
-      } else {
-        setFormLoading(false);
-        setDestination(placeDetails);
-      }
+      setDestination(response);
+      setFormLoading(false);
     } catch (e) {
       console.debug(`${e}`);
       setError("Something went wrong. Please try again.");

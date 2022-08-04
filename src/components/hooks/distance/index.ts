@@ -1,18 +1,26 @@
-import { createLatLangObject } from "../places/utils";
 import DistanceMatrixResponse = google.maps.DistanceMatrixResponse;
 import TravelMode = google.maps.TravelMode;
+import LatLng = google.maps.LatLng;
 
 export const getDistance = (
   origin: { lat: number; lng: number },
-  destination: { lat: number; lng: number },
+  destination: LatLng | undefined,
   travelMode: TravelMode
-) =>
-  new Promise<DistanceMatrixResponse>((resolve, reject) => {
+) => {
+  if (!destination) {
+    throw new Error("Need valid origin and destination");
+  }
+  return new Promise<DistanceMatrixResponse>((resolve, reject) => {
     try {
       new window.google.maps.DistanceMatrixService().getDistanceMatrix(
         {
-          origins: [createLatLangObject(origin.lat, origin.lng)],
-          destinations: [createLatLangObject(destination.lat, destination.lng)],
+          origins: [new window.google.maps.LatLng(origin.lat, origin.lng)],
+          destinations: [
+            new window.google.maps.LatLng(
+              destination.lat as unknown as number,
+              destination.lng as unknown as number
+            ),
+          ],
           travelMode: travelMode,
         },
         (response, status) => {
@@ -27,6 +35,7 @@ export const getDistance = (
       reject(e);
     }
   });
+};
 
 export const flattenDistance = (distanceObject: DistanceMatrixResponse) => {
   if (distanceObject.rows.length > 1) {

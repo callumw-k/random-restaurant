@@ -1,5 +1,8 @@
 import { randomInt } from "../../utils";
 import PlaceResult = google.maps.places.PlaceResult;
+import { flattenDistance, getDistance } from "../distance";
+import TravelMode = google.maps.TravelMode;
+import { Dispatch, SetStateAction } from "react";
 
 let fakeMap: HTMLDivElement;
 if (typeof document !== "undefined") {
@@ -38,21 +41,25 @@ const getNearbyPlace = async (keyword: string, lat: number, lng: number) => {
   return data.results;
 };
 
-export const getNearbyPlaces = (
-  lat: number,
-  lng: number,
+export const getNearbyPlaces = async (
+  mapId: string,
   keywords: string[] | undefined
-): Promise<(PlaceResult | null)[]> => {
-  if (!lat || !lng) {
-    throw new Error("Need valid lat and lng input");
+): Promise<{
+  originLat: number;
+  originLng: number;
+  places: (PlaceResult | null)[];
+}> => {
+  if (!mapId) {
+    throw new Error("Need mapId");
   } else if (!keywords || !keywords.length) {
     throw new Error("Need valid keywords input");
   } else if (typeof window === "undefined") {
     throw new Error("Need valid window object");
   }
+  const { originLat, originLng } = await getLatLngFromId(mapId);
 
-  return Promise.all(
-    keywords.map((keyword) => getNearbyPlace(keyword, lat, lng))
+  const places = await Promise.all(
+    keywords.map((keyword) => getNearbyPlace(keyword, originLat, originLng))
   )
     .then((data) => {
       return data.flat();
@@ -60,6 +67,11 @@ export const getNearbyPlaces = (
     .catch((e) => {
       throw new Error(e);
     });
+  return {
+    originLat,
+    originLng,
+    places,
+  };
 };
 
 export const getLatLngFromId = async (mapsId: string) => {
@@ -75,27 +87,34 @@ export const getLatLngFromId = async (mapsId: string) => {
 
 export const getRandomDestination = async (
   mapId: string,
-  keywords: string[] | undefined
-): Promise<{
-  placeDetails: PlaceResult;
-  originLat: number;
-  originLng: number;
-}> => {
+  keywords: string[] | undefined,
+  travelMode: TravelMode,
+  distance: string
+): Promise<PlaceResult> => {
   try {
-    const { originLat, originLng } = await getLatLngFromId(mapId);
-    const nearbyPlaceData = await getNearbyPlaces(
-      originLat,
-      originLng,
+    let chosenDestination;
+    const { originLat, originLng, places } = await getNearbyPlaces(
+      mapId,
       keywords
     );
-    const randomDestination =
-      nearbyPlaceData[randomInt(0, nearbyPlaceData.length - 1)];
-    const placeDetails = await getPlaceDetails(randomDestination?.place_id);
-    return {
-      placeDetails,
-      originLat,
-      originLng,
-    };
+    while (!chosenDestination) {
+      const randomDestination = places[randomInt(0, places.length - 1)];
+      const destinationLatLng = randomDestination?.geometry?.location;
+      const distanceFromOrigin = await getDistance(
+        { lat: originLat, lng: originLng },
+        destinationLatLng,
+        travelMode
+      );
+      const flattenedDistance = flattenDistance(distanceFromOrigin);
+      console.debug(flattenedDistance);
+      if (
+        flattenedDistance.durationValue &&
+        flattenedDistance.durationValue < parseInt(distance) * 60
+      ) {
+        chosenDestination = randomDestination;
+      }
+    }
+    return await getPlaceDetails(chosenDestination?.place_id);
   } catch (e) {
     throw new Error(`Could not get random destination: ${e}`);
   }
