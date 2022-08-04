@@ -12,14 +12,20 @@ const PlaceCard = ({
 }) => {
   return (
     <Stack
-      direction={{ base: "column", sm: "row" }}
+      direction={{ base: "column", md: "row" }}
       mt={{ base: 12, md: 16 }}
       boxShadow="lg"
-      borderColor="grey.200"
-      borderWidth="1px"
+      // borderColor="grey.200"
+      // borderWidth="1px"
       borderRadius="lg"
+      overflow="hidden"
     >
-      <Box flex="0 1 33%" width="100%" maxHeight="150px">
+      <Box
+        flex="0 1 50%"
+        width="100%"
+        height={{ base: "250px", md: "150px" }}
+        overflow="hidden"
+      >
         <Image
           src={image}
           width={1000}
@@ -27,14 +33,13 @@ const PlaceCard = ({
           style={{
             objectFit: "cover",
             objectPosition: "center",
-            maxHeight: "inherit",
             width: "100%",
-            height: "100%",
+            height: "inherit",
           }}
           alt={name}
         />
       </Box>
-      <Stack padding={{ base: 4 }} justifyContent="center">
+      <Stack padding={{ base: 8, md: 4 }} justifyContent="center">
         <Heading as="h1" size="md">
           {name}
         </Heading>
