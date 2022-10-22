@@ -1,22 +1,18 @@
-import { Box, Heading, Link, Stack } from "@chakra-ui/react";
+import { Box, Button, Heading, Link, Stack, Text } from "@chakra-ui/react";
 import Image from "next/future/image";
 import React from "react";
-const PlaceCard = ({
-  name,
-  image,
-  mapLink,
-}: {
+interface PlaceCardProps {
   name: string;
   image: string;
   mapLink: string | undefined;
-}) => {
+  rating: string | number;
+}
+const PlaceCard = ({ name, image, mapLink, rating }: PlaceCardProps) => {
   return (
     <Stack
       direction={{ base: "column", md: "row" }}
       mt={{ base: 12, md: 16 }}
       boxShadow="lg"
-      // borderColor="grey.200"
-      // borderWidth="1px"
       borderRadius="lg"
       overflow="hidden"
     >
@@ -28,24 +24,36 @@ const PlaceCard = ({
       >
         <Image
           src={image}
-          width={1000}
-          height={1000}
+          width={500}
+          height={500}
           style={{
             objectFit: "cover",
             objectPosition: "center",
             width: "100%",
-            height: "inherit",
+            height: "100%",
           }}
           alt={name}
         />
       </Box>
-      <Stack padding={{ base: 8, md: 4 }} justifyContent="center">
-        <Heading as="h1" size="md">
-          {name}
-        </Heading>
-        <Link target="_blank" href={mapLink}>
-          {mapLink}
+      <Stack padding={{ base: 8, md: 4 }} spacing={4} justifyContent="center">
+        <Link href={mapLink}>
+          <Heading as="h1" size="md">
+            {name}
+          </Heading>
         </Link>
+        <Text>
+          <strong>{rating}</strong> stars
+        </Text>
+        <Button
+          target="_blank"
+          backgroundColor="green.300"
+          color="whiteAlpha.900"
+          as="a"
+          href={mapLink}
+          maxW="80px"
+        >
+          Go
+        </Button>
       </Stack>
     </Stack>
   );

@@ -2,12 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-      domains: ["maps.googleapis.com"],
-  },
-  experimental: {
-    images: {
-      allowFutureImage: true,
-    },
+    domains: ["maps.googleapis.com"],
   },
 };
 

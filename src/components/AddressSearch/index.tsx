@@ -19,7 +19,6 @@ import { listOfCuisines } from "../utils/cuisine";
 import { SearchAddress } from "../SearchAddress";
 import { getRandomDestination } from "../hooks/places";
 import PlaceResult = google.maps.places.PlaceResult;
-import { flattenDistance, getDistance } from "../hooks/distance";
 import TravelMode = google.maps.TravelMode;
 
 export const AddressSearch = ({

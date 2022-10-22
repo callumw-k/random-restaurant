@@ -19,6 +19,7 @@ const Home: NextPage = () => {
     // @ts-ignore
     travelMode: "WALKING",
   });
+  console.debug(destination?.reviews);
 
   return (
     <Container maxW="xl" paddingTop={24}>
@@ -32,6 +33,7 @@ const Home: NextPage = () => {
           name={destination?.name || ""}
           image={destination?.photos?.[0]?.getUrl() || ""}
           mapLink={destination?.url || ""}
+          rating={destination?.rating || ""}
         />
       )}
     </Container>
